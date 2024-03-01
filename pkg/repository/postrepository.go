@@ -17,6 +17,8 @@ func NewPostRepo(db *gorm.DB) interfacesR.PostRepoInterface {
 }
 
 func (p *PostDatabase) FollowRelationshipExists(following_id, follower_id int64) bool {
+	fmt.Println("following ,follower:", following_id, follower_id)
+
 	query := `SELECT EXISTS (SELECT 1 FROM follows WHERE following_user_id = ? AND follower_user_id = ?)`
 
 	var exists bool
@@ -75,4 +77,15 @@ func (p *PostDatabase) FollowerExist(follower_id int64) bool {
 		return true
 	}
 	return false
+}
+func (p *PostDatabase) Unfollow(following_id, follower_id int64) error {
+	fmt.Println("followinfg and follower user id ", following_id, follower_id)
+	query := `DELETE FROM follows WHERE following_user_id= ? AND follower_user_id=?`
+
+	result := p.DB.Exec(query, following_id, follower_id)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+
 }

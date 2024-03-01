@@ -5,4 +5,5 @@ type PostRepoInterface interface {
 	FollowingExist(following_id int64) bool
 	FollowerExist(follower_id int64) bool
 	FollowRelationshipExists(following_id, follower_id int64) bool
+	Unfollow(follower_id, following_id int64) error
 }

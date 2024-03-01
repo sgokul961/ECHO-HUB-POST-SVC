@@ -48,3 +48,20 @@ func (p *postUsecase) FollowUser(following_id, follower_id int64) (bool, error) 
 	return create, nil
 
 }
+func (p *postUsecase) UnfollowUser(following_id, follower_id int64) (int64, error) {
+
+	chekForRelation := p.postRepo.FollowRelationshipExists(following_id, follower_id)
+
+	if !chekForRelation {
+		return 0, errors.New("no relation  exist with this id ")
+	}
+	err := p.postRepo.Unfollow(following_id, follower_id)
+
+	fmt.Println("follow ,followoer", following_id, follower_id)
+
+	if err != nil {
+		return 0, err
+	}
+	return follower_id, nil
+
+}

@@ -31,3 +31,16 @@ func (u *PostHandler) FollowUser(ctx context.Context, follow *pb.FollowUserReque
 	}, nil
 
 }
+func (u *PostHandler) UnfollowUser(ctx context.Context, unfollow *pb.UnfollowUserRequest) (*pb.UnfollowUserResponse, error) {
+
+	response, err := u.postusecase.UnfollowUser(unfollow.FollowUserId, unfollow.FollowerUserId)
+	if err != nil {
+		return &pb.UnfollowUserResponse{
+			FollowerUserId: unfollow.FollowerUserId,
+		}, err
+	}
+	return &pb.UnfollowUserResponse{
+		FollowerUserId: response,
+	}, nil
+
+}
