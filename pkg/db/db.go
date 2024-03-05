@@ -21,6 +21,8 @@ func Init(c config.Config) (*gorm.DB, error) {
 
 	}
 	db.AutoMigrate(&domain.Follow{}) //this is to be filled
+	db.AutoMigrate(domain.Post{})
+	db.AutoMigrate(domain.Like{})
 
 	return db, err
 }

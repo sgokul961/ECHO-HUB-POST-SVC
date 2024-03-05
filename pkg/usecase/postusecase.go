@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	clientinterface "github.com/sgokul961/echo-hub-post-svc/pkg/client/clientInterface"
+	"github.com/sgokul961/echo-hub-post-svc/pkg/domain"
+	"github.com/sgokul961/echo-hub-post-svc/pkg/models"
 	interfacesR "github.com/sgokul961/echo-hub-post-svc/pkg/repository/interface"
 	interfacesU "github.com/sgokul961/echo-hub-post-svc/pkg/usecase/usecaseinterface"
 )
@@ -63,5 +65,64 @@ func (p *postUsecase) UnfollowUser(following_id, follower_id int64) (int64, erro
 		return 0, err
 	}
 	return follower_id, nil
+
+}
+func (p *postUsecase) AddPost(upload models.AddPost) (int64, error) {
+
+	post_id, err := p.postRepo.AddPost(domain.Post{
+		UserID:    upload.UserID,
+		Content:   upload.Content,
+		ImageURL:  upload.ImageURL,
+		Timestamp: upload.Timestamp.Local(),
+	})
+	if err != nil {
+		return 0, errors.New("databse error ,cant add the post")
+	}
+	return post_id, nil
+
+}
+func (p *postUsecase) DeletePost(post_id, user_id int64) (int64, error) {
+
+	exist := p.postRepo.PostIdExist(post_id, user_id)
+	if !exist {
+		return 0, errors.New("post does not exist for the given user ,authorization failed")
+	}
+
+	deletedPostid, err := p.postRepo.DeletePost(post_id, user_id)
+
+	if err != nil {
+		return 0, errors.New("failed to delete post from the database")
+	}
+	return deletedPostid, nil
+
+}
+func (u *postUsecase) LikePost(post_id, user_id int64) (int64, error) {
+	//check if the post id exist
+
+	exist := u.postRepo.CheckForPostId(post_id)
+	if !exist {
+		return 0, errors.New(" invalid post id  ")
+	}
+	//check if alredy liked
+
+	alreadyLiked := u.postRepo.AlredyLiked(post_id, user_id)
+	if alreadyLiked {
+		return 0, errors.New("alredy liked ")
+	}
+
+	//like post
+
+	like, err := u.postRepo.LikePost(user_id, post_id)
+
+	if err != nil {
+		return 0, err
+	}
+
+	//return like, nil
+	// updated := u.postRepo.UpdatePost(post_id)
+	// if !updated {
+	// 	return 0, errors.New("unable to update like count")
+	// }
+	return like, nil
 
 }

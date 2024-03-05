@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/sgokul961/echo-hub-post-svc/pkg/domain"
 	interfacesR "github.com/sgokul961/echo-hub-post-svc/pkg/repository/interface"
 	"gorm.io/gorm"
 )
@@ -78,6 +79,8 @@ func (p *PostDatabase) FollowerExist(follower_id int64) bool {
 	}
 	return false
 }
+
+// unfollow user
 func (p *PostDatabase) Unfollow(following_id, follower_id int64) error {
 	fmt.Println("followinfg and follower user id ", following_id, follower_id)
 	query := `DELETE FROM follows WHERE following_user_id= ? AND follower_user_id=?`
@@ -87,5 +90,83 @@ func (p *PostDatabase) Unfollow(following_id, follower_id int64) error {
 		return result.Error
 	}
 	return nil
+
+}
+
+// upload post
+func (p *PostDatabase) AddPost(post domain.Post) (int64, error) {
+
+	var userID int64
+
+	query := `INSERT INTO posts (user_id, content, image_url,timestamp) VALUES (?, ?, ?, ?) RETURNING user_id`
+
+	res := p.DB.Raw(query, post.UserID, post.Content, post.ImageURL, post.Timestamp).Scan(&userID)
+	if res.Error != nil {
+		return 0, res.Error
+	}
+
+	return userID, nil
+
+}
+func (u *PostDatabase) DeletePost(post_id int64, user_id int64) (int64, error) {
+
+	query := `DELETE FROM posts WHERE post_id =? AND user_id = ?`
+
+	err := u.DB.Exec(query, post_id, user_id).Error
+	if err != nil {
+		return 0, errors.New("database error")
+	}
+
+	return post_id, nil
+}
+func (p *PostDatabase) PostIdExist(post_id, user_id int64) bool {
+	query := `SELECT EXISTS (SELECT 1 FROM posts WHERE post_id = ? AND user_id = ?)`
+	var exists bool
+
+	err := p.DB.Raw(query, post_id, user_id).Scan(&exists).Error
+	if err != nil {
+		return false
+	}
+	return exists
+}
+func (p *PostDatabase) CheckForPostId(post_id int64) bool {
+	var exists bool
+	query := `SELECT EXISTS (SELECT 1 FROM posts WHERE post_id = ?)`
+
+	if err := p.DB.Raw(query, post_id).Scan(&exists).Error; err != nil {
+		return false
+	}
+	return exists
+}
+func (p *PostDatabase) LikePost(user_id, post_id int64) (int64, error) {
+
+	likeQuery := `INSERT INTO likes (post_id,user_id,timestamp) VALUES(?,?,NOW())`
+
+	if err := p.DB.Exec(likeQuery, post_id, user_id).Error; err != nil {
+		return 0, err
+	}
+
+	return post_id, nil
+
+}
+func (p *PostDatabase) UpdatePost(post_id int64) bool {
+
+	// Update the likes_count in the posts table
+	updateQuery := `UPDATE posts SET likes_count = likes_count + 1 WHERE post_id = ?`
+	if err := p.DB.Raw(updateQuery, post_id).Error; err != nil {
+		return false
+	}
+	return true
+
+}
+func (p *PostDatabase) AlredyLiked(postId, userId int64) bool {
+	query := `SELECT EXISTS(SELECT 1 from likes WHERE post_id = ? AND user_id = ?)`
+	var exists bool
+
+	err := p.DB.Raw(query, postId, userId).Scan(&exists).Error
+	if err != nil {
+		return false
+	}
+	return exists
 
 }
