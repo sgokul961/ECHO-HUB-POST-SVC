@@ -160,6 +160,7 @@ func (p *PostDatabase) UpdatePost(post_id int64) bool {
 
 }
 func (p *PostDatabase) AlredyLiked(postId, userId int64) bool {
+
 	query := `SELECT EXISTS(SELECT 1 from likes WHERE post_id = ? AND user_id = ?)`
 	var exists bool
 
@@ -168,5 +169,39 @@ func (p *PostDatabase) AlredyLiked(postId, userId int64) bool {
 		return false
 	}
 	return exists
+
+}
+
+// dislike post
+func (p *PostDatabase) DisLikePost(post_id, user_id int64) bool {
+
+	query := `DELETE FROM likes WHERE post_id = ? AND user_id = ?`
+
+	err := p.DB.Exec(query, post_id, user_id).Error
+
+	if err != nil {
+		fmt.Println("error executing query:", err)
+		return false
+	}
+
+	return true
+}
+
+func (p *PostDatabase) ChekIfLikeExist(post_id, user_id int64) bool {
+	fmt.Println("post and user ", post_id, user_id)
+
+	query := `SELECT EXISTS (SELECT 1 FROM likes WHERE post_id= ? AND user_id = ?)`
+
+	var exist bool
+	fmt.Println("post and user id ", post_id, user_id)
+
+	err := p.DB.Raw(query, post_id, user_id).Scan(&exist).Error
+	if err != nil {
+		fmt.Println("error executing query:", err)
+
+		return false
+	}
+	fmt.Println("exist ", exist)
+	return exist
 
 }

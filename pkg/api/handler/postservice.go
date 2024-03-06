@@ -90,3 +90,17 @@ func (u *PostHandler) LikePost(ctx context.Context, like *pb.LikePostRequest) (*
 	}, nil
 
 }
+
+func (u *PostHandler) DislikePost(ctx context.Context, dislike *pb.DislikePostRequest) (*pb.DislikePostResponse, error) {
+	res, err := u.postusecase.DisLikepost(dislike.UserId, dislike.PostId)
+
+	if err != nil {
+		return &pb.DislikePostResponse{
+			Success: res,
+		}, err
+	}
+	return &pb.DislikePostResponse{
+		Success: res,
+	}, nil
+
+}

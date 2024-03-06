@@ -15,4 +15,6 @@ type PostRepoInterface interface {
 	CheckForPostId(post_id int64) bool
 	UpdatePost(post_id int64) bool
 	AlredyLiked(postId, userId int64) bool
+	DisLikePost(post_id, user_id int64) bool
+	ChekIfLikeExist(post_id, user_id int64) bool
 }

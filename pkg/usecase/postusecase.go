@@ -126,3 +126,18 @@ func (u *postUsecase) LikePost(post_id, user_id int64) (int64, error) {
 	return like, nil
 
 }
+func (u *postUsecase) DisLikepost(user_id, post_id int64) (bool, error) {
+
+	liked := u.postRepo.ChekIfLikeExist(post_id, user_id)
+	if !liked {
+		return false, errors.New("cant dislikw no relation exist")
+	}
+
+	dislike := u.postRepo.DisLikePost(post_id, user_id)
+
+	if !dislike {
+		return dislike, errors.New("cant delete this post")
+	}
+	return true, nil
+
+}
