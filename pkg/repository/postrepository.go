@@ -82,7 +82,6 @@ func (p *PostDatabase) FollowerExist(follower_id int64) bool {
 
 // unfollow user
 func (p *PostDatabase) Unfollow(following_id, follower_id int64) error {
-	fmt.Println("followinfg and follower user id ", following_id, follower_id)
 	query := `DELETE FROM follows WHERE following_user_id= ? AND follower_user_id=?`
 
 	result := p.DB.Exec(query, following_id, follower_id)
@@ -140,7 +139,7 @@ func (p *PostDatabase) CheckForPostId(post_id int64) bool {
 }
 func (p *PostDatabase) LikePost(user_id, post_id int64) (int64, error) {
 
-	likeQuery := `INSERT INTO likes (post_id,user_id,timestamp) VALUES(?,?,NOW())`
+	likeQuery := `INSERT INTO likes (posts_id,user_id,timestamp) VALUES(?,?,NOW())`
 
 	if err := p.DB.Exec(likeQuery, post_id, user_id).Error; err != nil {
 		return 0, err
@@ -152,16 +151,27 @@ func (p *PostDatabase) LikePost(user_id, post_id int64) (int64, error) {
 func (p *PostDatabase) UpdatePost(post_id int64) bool {
 
 	// Update the likes_count in the posts table
-	updateQuery := `UPDATE posts SET likes_count = likes_count + 1 WHERE post_id = ?`
-	if err := p.DB.Raw(updateQuery, post_id).Error; err != nil {
+	updateQuery := `UPDATE posts SET likes_count = likes_count + 1 WHERE  post_id = ?`
+	if err := p.DB.Exec(updateQuery, post_id).Error; err != nil {
 		return false
 	}
 	return true
 
 }
+
+// impliment this
+func (p *PostDatabase) UpdatePostDislike(post_id int64) bool {
+	query := `UPDATE posts SET likes_count=likes_count-1 WHERE post_id =?`
+	if err := p.DB.Exec(query, post_id).Error; err != nil {
+		return false
+	}
+	return true
+
+}
+
 func (p *PostDatabase) AlredyLiked(postId, userId int64) bool {
 
-	query := `SELECT EXISTS(SELECT 1 from likes WHERE post_id = ? AND user_id = ?)`
+	query := `SELECT EXISTS(SELECT 1 from likes WHERE posts_id = ? AND user_id = ?)`
 	var exists bool
 
 	err := p.DB.Raw(query, postId, userId).Scan(&exists).Error
@@ -175,7 +185,7 @@ func (p *PostDatabase) AlredyLiked(postId, userId int64) bool {
 // dislike post
 func (p *PostDatabase) DisLikePost(post_id, user_id int64) bool {
 
-	query := `DELETE FROM likes WHERE post_id = ? AND user_id = ?`
+	query := `DELETE FROM likes WHERE posts_id = ? AND user_id = ?`
 
 	err := p.DB.Exec(query, post_id, user_id).Error
 
@@ -190,7 +200,7 @@ func (p *PostDatabase) DisLikePost(post_id, user_id int64) bool {
 func (p *PostDatabase) ChekIfLikeExist(post_id, user_id int64) bool {
 	fmt.Println("post and user ", post_id, user_id)
 
-	query := `SELECT EXISTS (SELECT 1 FROM likes WHERE post_id= ? AND user_id = ?)`
+	query := `SELECT EXISTS (SELECT 1 FROM likes WHERE posts_id= ? AND user_id = ?)`
 
 	var exist bool
 	fmt.Println("post and user id ", post_id, user_id)

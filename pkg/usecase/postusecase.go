@@ -118,11 +118,11 @@ func (u *postUsecase) LikePost(post_id, user_id int64) (int64, error) {
 		return 0, err
 	}
 
-	//return like, nil
-	// updated := u.postRepo.UpdatePost(post_id)
-	// if !updated {
-	// 	return 0, errors.New("unable to update like count")
-	// }
+	fmt.Println("post id", post_id)
+	updated := u.postRepo.UpdatePost(post_id)
+	if !updated {
+		return 0, errors.New("unable to update like count")
+	}
 	return like, nil
 
 }
@@ -130,13 +130,18 @@ func (u *postUsecase) DisLikepost(user_id, post_id int64) (bool, error) {
 
 	liked := u.postRepo.ChekIfLikeExist(post_id, user_id)
 	if !liked {
-		return false, errors.New("cant dislikw no relation exist")
+		return false, errors.New("cant dislike no relation exist")
 	}
 
 	dislike := u.postRepo.DisLikePost(post_id, user_id)
 
 	if !dislike {
 		return dislike, errors.New("cant delete this post")
+	}
+	updated := u.postRepo.UpdatePostDislike(post_id)
+	if !updated {
+		return false, errors.New("unable to decrement count from post")
+
 	}
 	return true, nil
 
