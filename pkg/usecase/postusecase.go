@@ -146,3 +146,20 @@ func (u *postUsecase) DisLikepost(user_id, post_id int64) (bool, error) {
 	return true, nil
 
 }
+
+//add comment to post
+
+func (u *postUsecase) AddComment(comment models.AddComent) (int64, error) {
+	fmt.Println("userid,postid", comment.UserID, comment.PostsID)
+	commentid, err := u.postRepo.AddComment(domain.Comment{
+		PostsID:   comment.PostsID,
+		UserID:    comment.UserID,
+		Content:   comment.Content,
+		Timestamp: comment.Timestamp,
+	})
+	if err != nil {
+		return 0, errors.New("databse error ,cant add the post")
+	}
+	return commentid, nil
+
+}

@@ -215,3 +215,20 @@ func (p *PostDatabase) ChekIfLikeExist(post_id, user_id int64) bool {
 	return exist
 
 }
+
+//adding comments to the post
+
+func (p *PostDatabase) AddComment(comment domain.Comment) (int64, error) {
+	var commentID int64
+
+	query := `INSERT INTO comments (posts_id, user_id, content, timestamp) VALUES (?, ?, ?, ?) RETURNING comment_id`
+
+	// Execute the query and scan the returned comment_id
+	res := p.DB.Raw(query, comment.PostsID, comment.UserID, comment.Content, comment.Timestamp).Scan(&commentID)
+
+	if res.Error != nil {
+		return 0, res.Error
+	}
+
+	return commentID, nil
+}

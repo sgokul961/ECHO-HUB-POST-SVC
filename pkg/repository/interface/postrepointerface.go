@@ -19,4 +19,6 @@ type PostRepoInterface interface {
 	AlredyLiked(postId, userId int64) bool
 	DisLikePost(post_id, user_id int64) bool
 	ChekIfLikeExist(post_id, user_id int64) bool
+
+	AddComment(comment domain.Comment) (int64, error)
 }

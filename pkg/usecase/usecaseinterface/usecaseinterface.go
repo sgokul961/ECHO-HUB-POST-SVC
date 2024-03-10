@@ -9,4 +9,5 @@ type PostUseCaseInterface interface {
 	DeletePost(post_id, user_id int64) (int64, error)
 	LikePost(post_id, user_id int64) (int64, error)
 	DisLikepost(user_id, post_id int64) (bool, error)
+	AddComment(comment models.AddComent) (int64, error)
 }

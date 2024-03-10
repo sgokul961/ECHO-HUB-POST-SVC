@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/sgokul961/echo-hub-post-svc/pkg/models"
@@ -101,6 +102,23 @@ func (u *PostHandler) DislikePost(ctx context.Context, dislike *pb.DislikePostRe
 	}
 	return &pb.DislikePostResponse{
 		Success: res,
+	}, nil
+
+}
+func (u *PostHandler) CommentPost(ctx context.Context, comment *pb.CommentPostRequest) (*pb.CommentPostResponse, error) {
+
+	response, err := u.postusecase.AddComment(models.AddComent{
+		PostsID: comment.PostId,
+		UserID:  comment.UserId,
+		Content: comment.Content,
+	})
+	fmt.Println("content", comment.Content)
+	if err != nil {
+		// Handle error
+		return nil, err
+	}
+	return &pb.CommentPostResponse{
+		CommentId: response,
 	}, nil
 
 }

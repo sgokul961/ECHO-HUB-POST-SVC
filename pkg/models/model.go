@@ -9,3 +9,9 @@ type AddPost struct {
 	ImageURL  string    `json:"image_url,omitempty"`
 	Timestamp time.Time `json:"timestamp"`
 }
+type AddComent struct {
+	PostsID   int64     `json:"posts_id"`
+	UserID    int64     `json:"user_id"`
+	Content   string    `json:"content" gorm:"not null"`
+	Timestamp time.Time `json:"timestamp"`
+}
