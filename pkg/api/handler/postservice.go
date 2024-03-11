@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -120,5 +121,44 @@ func (u *PostHandler) CommentPost(ctx context.Context, comment *pb.CommentPostRe
 	return &pb.CommentPostResponse{
 		CommentId: response,
 	}, nil
+
+}
+func (u *PostHandler) GetComments(ctx context.Context, getcomment *pb.GetCommentsRequest) (*pb.GetCommentsResponse, error) {
+
+	comments, err := u.postusecase.GetComment(getcomment.PostId)
+
+	if err != nil {
+		return nil, err
+	}
+	// Convert []string comments to []*pb.Comment
+	pbComments := make([]*pb.Comment, len(comments))
+	for i, comment := range comments {
+		pbComments[i] = &pb.Comment{Content: comment} // Assuming pb.Comment has a Content field to store comment content
+	}
+
+	// Create response with converted comments
+	response := &pb.GetCommentsResponse{
+		Comments: pbComments,
+	}
+
+	return response, nil // Return the response along with nil error if no error occurred
+
+}
+func (u *PostHandler) DeleteComments(ctx context.Context, deleteComment *pb.DeleteCommentRequest) (*pb.DeleteCommentResponse, error) {
+	// Call the DeleteComment method from the usecase
+
+	deletedCommentID, success := u.postusecase.DeleteComment(deleteComment.PostId, deleteComment.CommentId, deleteComment.UserId)
+	if !success {
+		// Return error if deletion fails
+
+		return nil, errors.New("cant delete the comment,invalid comment id")
+	}
+	// Construct and return the response message
+
+	response := &pb.DeleteCommentResponse{
+		CommentId: deletedCommentID,
+		Success:   true,
+	}
+	return response, nil
 
 }

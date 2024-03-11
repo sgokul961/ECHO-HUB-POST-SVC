@@ -232,3 +232,78 @@ func (p *PostDatabase) AddComment(comment domain.Comment) (int64, error) {
 
 	return commentID, nil
 }
+
+//get comment
+
+func (p *PostDatabase) GetComment(post_id int64) ([]string, error) {
+	var content string
+	var comments []string
+
+	query := `SELECT content FROM comments WHERE posts_id = ?`
+
+	// Use Raw to execute the raw SQL query
+	rows, err := p.DB.Raw(query, post_id).Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		// Scan each row into the content variable
+		if err := rows.Scan(&content); err != nil {
+			return nil, err
+		}
+		// Append content to the comments slice
+		comments = append(comments, content)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return comments, nil
+}
+
+// to update comment count in post table
+func (p *PostDatabase) UpdateCommentCount(post_id int64) bool {
+
+	query := `UPDATE posts SET comments_count=comments_count+1 WHERE post_id = ?`
+
+	if err := p.DB.Exec(query, post_id).Error; err != nil {
+		return false
+	}
+	return true
+
+}
+
+//cheking if comment exist on comment table
+
+func (p *PostDatabase) ChcekCommentExist(postID, commentID, UserID int64) bool {
+
+	query := `SELECT EXISTS (SELECT 1 FROM comments WHERE posts_id = ? AND comment_id = ? AND user_id = ?)`
+
+	var exists bool
+
+	err := p.DB.Raw(query, postID, commentID, UserID).Scan(&exists).Error
+
+	if err != nil {
+		fmt.Println("error executing query:", err)
+
+		return false
+	}
+	return exists
+}
+
+//if comment exist then we can delete comment
+
+func (p *PostDatabase) DeleteComment(postID, commentID, UserID int64) (int64, bool) {
+
+	query := `DELETE  FROM comments WHERE posts_id = ? AND comment_id = ? AND user_id = ?`
+
+	err := p.DB.Exec(query, postID, commentID, UserID).Error
+
+	if err != nil {
+		return 0, false
+	}
+	return commentID, true
+
+}

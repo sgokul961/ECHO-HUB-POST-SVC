@@ -18,7 +18,7 @@ type Post struct {
 	ImageURL      string    `json:"image_url,omitempty"`
 	Timestamp     time.Time `json:"timestamp"`
 	LikesCount    int64     `json:"likes_count" gorm:"default:0"`
-	CommentsCount int64     `json:"comments_count"`
+	CommentsCount int64     `json:"comments_count" gorm:"default:0"`
 	Comments      []Comment `json:"comments,omitempty" gorm:"foreignKey:PostsID;constraint:OnDelete:CASCADE"`
 }
 

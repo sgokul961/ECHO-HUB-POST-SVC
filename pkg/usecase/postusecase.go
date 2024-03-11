@@ -150,7 +150,7 @@ func (u *postUsecase) DisLikepost(user_id, post_id int64) (bool, error) {
 //add comment to post
 
 func (u *postUsecase) AddComment(comment models.AddComent) (int64, error) {
-	fmt.Println("userid,postid", comment.UserID, comment.PostsID)
+
 	commentid, err := u.postRepo.AddComment(domain.Comment{
 		PostsID:   comment.PostsID,
 		UserID:    comment.UserID,
@@ -160,6 +160,46 @@ func (u *postUsecase) AddComment(comment models.AddComent) (int64, error) {
 	if err != nil {
 		return 0, errors.New("databse error ,cant add the post")
 	}
+	update := u.postRepo.UpdateCommentCount(comment.PostsID)
+	if !update {
+		return 0, errors.New("cant update comment count")
+	}
 	return commentid, nil
 
+}
+func (u *postUsecase) GetComment(post_id int64) ([]string, error) {
+
+	idexist := u.postRepo.CheckForPostId(post_id)
+
+	if !idexist {
+		return nil, errors.New("post id dosnt exist")
+	}
+
+	comments, err := u.postRepo.GetComment(post_id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Now you have the comments, you can use them as needed
+	fmt.Println("Comments:", comments)
+
+	return comments, nil
+
+}
+
+//delete comment
+
+func (u *postUsecase) DeleteComment(postID, commentID, UserID int64) (int64, bool) {
+
+	exists := u.postRepo.ChcekCommentExist(postID, commentID, UserID)
+	if !exists {
+		return 0, false
+	}
+
+	commentid, success := u.postRepo.DeleteComment(postID, commentID, UserID)
+
+	if !success {
+		return 0, false
+	}
+	return commentid, true
 }
