@@ -3,9 +3,11 @@ package usecase
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	clientinterface "github.com/sgokul961/echo-hub-post-svc/pkg/client/clientInterface"
 	"github.com/sgokul961/echo-hub-post-svc/pkg/domain"
+	"github.com/sgokul961/echo-hub-post-svc/pkg/helper"
 	"github.com/sgokul961/echo-hub-post-svc/pkg/models"
 	interfacesR "github.com/sgokul961/echo-hub-post-svc/pkg/repository/interface"
 	interfacesU "github.com/sgokul961/echo-hub-post-svc/pkg/usecase/usecaseinterface"
@@ -78,6 +80,9 @@ func (p *postUsecase) AddPost(upload models.AddPost) (int64, error) {
 	if err != nil {
 		return 0, errors.New("databse error ,cant add the post")
 	}
+	//for notification
+	// fetch array of userIds of the followers
+	//loop the array and make notification part for each time with the topic as that userid
 	return post_id, nil
 
 }
@@ -163,7 +168,23 @@ func (u *postUsecase) AddComment(comment models.AddComent) (int64, error) {
 	update := u.postRepo.UpdateCommentCount(comment.PostsID)
 	if !update {
 		return 0, errors.New("cant update comment count")
+
 	}
+
+	//kafka
+
+	// Create a notification message for the new comment
+	notificationMsg := fmt.Sprintf("New comment on post %d by user %d: %s", comment.PostsID, comment.UserID, comment.Content)
+	//fetch userid of the post and make it as the topic 
+	// Push the notification message to Kafka
+	err = helper.PushCommentToQueue("comment_notifications", []byte(notificationMsg))
+	if err != nil {
+		// Handle error (e.g., log it)
+		log.Printf("Failed to push comment notification to Kafka: %v", err)
+		// Continue processing even if pushing notification fails
+	}
+
+	// Return the ID of the added comment
 	return commentid, nil
 
 }
@@ -196,10 +217,15 @@ func (u *postUsecase) DeleteComment(postID, commentID, UserID int64) (int64, boo
 		return 0, false
 	}
 
-	commentid, success := u.postRepo.DeleteComment(postID, commentID, UserID)
+	commentId, success := u.postRepo.DeleteComment(postID, commentID, UserID)
 
 	if !success {
 		return 0, false
 	}
-	return commentid, true
+
+	update := u.postRepo.UpdateCommentCountAfterDelete(postID)
+	if !update {
+		return 0, false
+	}
+	return commentId, true
 }

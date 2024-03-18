@@ -148,6 +148,7 @@ func (u *PostHandler) DeleteComments(ctx context.Context, deleteComment *pb.Dele
 	// Call the DeleteComment method from the usecase
 
 	deletedCommentID, success := u.postusecase.DeleteComment(deleteComment.PostId, deleteComment.CommentId, deleteComment.UserId)
+	fmt.Println("success ", success)
 	if !success {
 		// Return error if deletion fails
 

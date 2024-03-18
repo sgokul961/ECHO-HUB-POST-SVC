@@ -23,7 +23,9 @@ type PostRepoInterface interface {
 	AddComment(comment domain.Comment) (int64, error)
 	UpdateCommentCount(post_id int64) bool
 	GetComment(post_id int64) ([]string, error)
+	UpdateCommentCountAfterDelete(post_id int64) bool
 
 	ChcekCommentExist(postID, commentID, UserID int64) bool
+
 	DeleteComment(postID, commentID, UserID int64) (int64, bool)
 }

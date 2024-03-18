@@ -307,3 +307,13 @@ func (p *PostDatabase) DeleteComment(postID, commentID, UserID int64) (int64, bo
 	return commentID, true
 
 }
+func (p *PostDatabase) UpdateCommentCountAfterDelete(post_id int64) bool {
+
+	query := `UPDATE posts SET comments_count=comments_count-1 WHERE post_id = ?`
+
+	if err := p.DB.Exec(query, post_id).Error; err != nil {
+		return false
+	}
+	return true
+
+}
