@@ -15,3 +15,9 @@ type AddComent struct {
 	Content   string    `json:"content" gorm:"not null"`
 	Timestamp time.Time `json:"timestamp"`
 }
+type Notification struct {
+	Topic   string `json:"topic"`
+	UserID  int64  `json:"user_id"`
+	PostsID int64  `json:"post_id"`
+	Message string `json:"message"`
+}

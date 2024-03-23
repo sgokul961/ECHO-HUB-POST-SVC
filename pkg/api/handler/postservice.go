@@ -163,3 +163,17 @@ func (u *PostHandler) DeleteComments(ctx context.Context, deleteComment *pb.Dele
 	return response, nil
 
 }
+func (u *PostHandler) GetUserId(ctx context.Context, p *pb.GetUserIdRequest) (*pb.GetUserIdResponse, error) {
+
+	user_id, err := u.postusecase.GetPostOwner(p.PostId)
+
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.GetUserIdResponse{
+		UserId:  user_id,
+		Success: true,
+	}
+	return response, nil
+
+}

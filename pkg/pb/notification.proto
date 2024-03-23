@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package notification;
+
+option go_package = "github.com/sgokul961/echo-hub-notification-svc/pkg/pb";
+
+
+
+service NotificationService {
+  // Method to send a notification when a user comments on a post
+  rpc SendCommentedNotification (CommentedNotification) returns (NotificationResponse) {}
+
+  // Method to send a notification when a user follows another user
+  rpc SendFollowedNotification (FollowedNotification) returns (NotificationResponse) {}
+
+  // Method to send a notification message to Kafka topic
+  rpc SendKafkaNotification (KafkaNotification) returns (NotificationResponse) {}
+
+  rpc SendLikeNotification (LikeNotification) returns (NotificationResponse) {}
+
+}
+
+
+
+message CommentedNotification {
+  string postId = 1;
+  string commenterId = 2;
+  string comment = 3;
+}
+
+message FollowedNotification {
+  string followerId = 1;
+  string followedUserId = 2;
+}
+
+// Kafka message for notifications
+message KafkaNotification {
+  string key = 1;
+  string value = 2;
+}
+
+//LikeNotification Request
+message LikeNotification{
+  int64 post_id = 1;
+  int64 user_id = 2;
+
+}
+
+message NotificationResponse {
+  string message = 1;
+}

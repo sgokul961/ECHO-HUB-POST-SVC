@@ -28,4 +28,8 @@ type PostRepoInterface interface {
 	ChcekCommentExist(postID, commentID, UserID int64) bool
 
 	DeleteComment(postID, commentID, UserID int64) (int64, bool)
+
+	//for kafka
+
+	FetchPostedUserId(post_id int64) (int64, error)
 }

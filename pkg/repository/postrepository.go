@@ -317,3 +317,20 @@ func (p *PostDatabase) UpdateCommentCountAfterDelete(post_id int64) bool {
 	return true
 
 }
+
+//for kafka
+
+func (p *PostDatabase) FetchPostedUserId(post_id int64) (int64, error) {
+
+	var user_id int64
+
+	query := `SELECT user_id FROM  posts WHERE post_id = ? `
+
+	err := p.DB.Raw(query, post_id).Scan(&user_id).Error
+
+	if err != nil {
+		return 0, err
+	}
+	return user_id, nil
+
+}

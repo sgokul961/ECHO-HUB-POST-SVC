@@ -12,4 +12,5 @@ type PostUseCaseInterface interface {
 	AddComment(comment models.AddComent) (int64, error)
 	GetComment(post_id int64) ([]string, error)
 	DeleteComment(postID, commentID, UserID int64) (int64, bool)
+	GetPostOwner(postid int64) (int64, error)
 }

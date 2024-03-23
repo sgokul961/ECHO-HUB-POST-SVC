@@ -128,6 +128,34 @@ func (u *postUsecase) LikePost(post_id, user_id int64) (int64, error) {
 	if !updated {
 		return 0, errors.New("unable to update like count")
 	}
+
+	// creating topic for kafka....the topic will be the one who is going to get the likes
+	// postUserId, err := u.postRepo.FetchPostedUserId(post_id)
+
+	// if err != nil {
+	// 	return 0, err
+	// }
+
+	topic := "like_notification"
+
+	//converting the   user id to string and assigning it into a topic.
+
+	// topic := strconv.FormatInt(postUserId, 10)
+
+	notificationMsg := fmt.Sprintf("New like on post %d by user %d", post_id, user_id)
+	fmt.Println("post id is", post_id)
+	err = helper.PushLikeNotificationToQueue(models.Notification{
+		Topic:   topic,
+		UserID:  user_id,
+		PostsID: post_id,
+	}, []byte(notificationMsg))
+
+	if err != nil {
+		// Handle error (e.g., log it)
+		log.Printf("Failed to push comment notification to Kafka: %v", err)
+		// Continue processing even if pushing notification fails
+	}
+
 	return like, nil
 
 }
@@ -148,6 +176,7 @@ func (u *postUsecase) DisLikepost(user_id, post_id int64) (bool, error) {
 		return false, errors.New("unable to decrement count from post")
 
 	}
+
 	return true, nil
 
 }
@@ -171,11 +200,11 @@ func (u *postUsecase) AddComment(comment models.AddComent) (int64, error) {
 
 	}
 
-	//kafka
+	//creating an event in kafka to trigger the pushcomment to
 
 	// Create a notification message for the new comment
 	notificationMsg := fmt.Sprintf("New comment on post %d by user %d: %s", comment.PostsID, comment.UserID, comment.Content)
-	//fetch userid of the post and make it as the topic 
+	//fetch userid of the post and make it as the topic
 	// Push the notification message to Kafka
 	err = helper.PushCommentToQueue("comment_notifications", []byte(notificationMsg))
 	if err != nil {
@@ -228,4 +257,17 @@ func (u *postUsecase) DeleteComment(postID, commentID, UserID int64) (int64, boo
 		return 0, false
 	}
 	return commentId, true
+}
+
+//getUserIdOfPost  :: for validating kafka
+
+func (p *postUsecase) GetPostOwner(postid int64) (int64, error) {
+
+	user_id, err := p.postRepo.FetchPostedUserId(postid)
+
+	if err != nil {
+		return 0, err
+	}
+	return user_id, nil
+
 }
