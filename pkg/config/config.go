@@ -6,6 +6,7 @@ type Config struct {
 	Port               string `mapstructure:"PORT"`
 	DBUrl              string `mapstructure:"DB_URL"`
 	AuthHubUrl         string `mapstructure:"auth_hub_url"`
+	ChatHubUrl         string `mapstructure:"chat_hub_url"`
 	NotificationHubUrl string `mapstructure:"notification_hub_url"`
 
 	//Kafka KafkaConfig
@@ -25,7 +26,7 @@ func LoadConfig() (config Config, err error) {
 	viper.AutomaticEnv()
 
 	// Add Kafka-specific environment variable prefix
-	viper.SetEnvPrefix("KAFKA")
+	//viper.SetEnvPrefix("KAFKA")
 
 	err = viper.ReadInConfig()
 

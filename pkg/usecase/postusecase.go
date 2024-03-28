@@ -16,12 +16,14 @@ import (
 type postUsecase struct {
 	postRepo   interfacesR.PostRepoInterface
 	AuthClient clientinterface.AuthServiceClient
+	ChatClient clientinterface.ChatServiceClient
 }
 
-func NewPostUseCase(postrepo interfacesR.PostRepoInterface, authClient clientinterface.AuthServiceClient) interfacesU.PostUseCaseInterface {
+func NewPostUseCase(postrepo interfacesR.PostRepoInterface, authClient clientinterface.AuthServiceClient, chatClinet clientinterface.ChatServiceClient) interfacesU.PostUseCaseInterface {
 	return &postUsecase{
 		postRepo:   postrepo,
 		AuthClient: authClient,
+		ChatClient: chatClinet,
 	}
 
 }
@@ -48,6 +50,12 @@ func (p *postUsecase) FollowUser(following_id, follower_id int64) (bool, error) 
 	if err != nil {
 		return false, err
 	}
+	created := p.ChatClient.CreateChatRoom(follower_id, following_id)
+	if created != nil {
+		// Handle error
+		return false, errors.New("error creating chat room")
+	}
+
 	fmt.Println("follower", follower_id)
 	return create, nil
 

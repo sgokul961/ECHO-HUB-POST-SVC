@@ -20,6 +20,7 @@ func InitApi(cfg config.Config) (*api.ServerHTTP, error) {
 		usecase.NewPostUseCase,
 		handler.NewPostHandler,
 		client.NewAuthServiceClient,
+		client.NewChatServiceClient,
 		api.NewServerHttp)
 	return &api.ServerHTTP{}, nil
 }

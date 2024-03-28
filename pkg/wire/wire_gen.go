@@ -25,7 +25,8 @@ func InitApi(cfg config.Config) (*api.ServerHTTP, error) {
 	}
 	postRepoInterface := repository.NewPostRepo(gormDB)
 	authServiceClient := client.NewAuthServiceClient(cfg)
-	postUseCaseInterface := usecase.NewPostUseCase(postRepoInterface, authServiceClient)
+	chatServiceClient := client.NewChatServiceClient(cfg)
+	postUseCaseInterface := usecase.NewPostUseCase(postRepoInterface, authServiceClient, chatServiceClient)
 	postHandler := handler.NewPostHandler(postUseCaseInterface)
 	serverHTTP := api.NewServerHttp(postHandler)
 	return serverHTTP, nil
