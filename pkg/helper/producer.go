@@ -50,9 +50,9 @@ func ConnectToProducer(brokerUrl []string) (sarama.SyncProducer, error) {
 
 }
 
-func PushLikeNotificationToQueue(notification models.Notification, message []byte) error {
+func PushLikeNotificationToQueue(notifications models.LikeNotification, message []byte) error {
 	// Connect to Kafka producer
-	brokerUrl := []string{"localhost:9092"}
+	brokerUrl := []string{"kafka:9092"}
 
 	producer, err := ConnectToProducer(brokerUrl)
 	fmt.Println("err", err)
@@ -62,7 +62,39 @@ func PushLikeNotificationToQueue(notification models.Notification, message []byt
 	defer producer.Close()
 
 	// Serialize notification message to JSON
-	notification.Message = "you got one like"
+	notifications.Message = "you got one like"
+	notificationJSON, err := json.Marshal(notifications)
+	if err != nil {
+		return err // Return error if serialization fails
+	}
+
+	msg := &sarama.ProducerMessage{
+		Topic: notifications.Topic,
+		Value: sarama.StringEncoder(notificationJSON), // Encode as JSON string
+	}
+
+	_, _, err = producer.SendMessage(msg)
+	if err != nil {
+		return err // Return error if sending message fails
+	}
+
+	fmt.Printf("like sent successfully to topic: %s\n", notifications.Topic)
+	return nil
+}
+func PushcommentNotificationToQueue(notification models.CommentNotification, message []byte) error {
+	// Connect to Kafka producer
+	brokerUrl := []string{"kafka:9092"}
+
+	producer, err := ConnectToProducer(brokerUrl)
+
+	if err != nil {
+		return err // Return the error if connection to producer fails
+	}
+	defer producer.Close()
+
+	// Serialize notification message to JSON
+	notification.Message = "you got a new comment"
+
 	notificationJSON, err := json.Marshal(notification)
 	if err != nil {
 		return err // Return error if serialization fails
@@ -78,6 +110,7 @@ func PushLikeNotificationToQueue(notification models.Notification, message []byt
 		return err // Return error if sending message fails
 	}
 
-	fmt.Printf("like sent successfully to topic: %s\n", notification.Topic)
+	fmt.Printf("comment sent successfully to topic: %s\n", notification.Topic)
+	fmt.Println("comment contents is ", notification.Content)
 	return nil
 }

@@ -15,9 +15,17 @@ type AddComent struct {
 	Content   string    `json:"content" gorm:"not null"`
 	Timestamp time.Time `json:"timestamp"`
 }
-type Notification struct {
+type LikeNotification struct {
 	Topic   string `json:"topic"`
 	UserID  int64  `json:"user_id"`
 	PostsID int64  `json:"post_id"`
 	Message string `json:"message"`
+}
+type CommentNotification struct {
+	CommentTopic string `json:"comment_topic"`
+	UserID       int64  `json:"user_id"`
+	Message      string `json:"message"`
+	PostID       int64  `json:"post_id"`
+	Topic        string `json:"topic" ` // Add the 'Topic' field here
+	Content      string `json:"content"`
 }

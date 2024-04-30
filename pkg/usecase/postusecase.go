@@ -51,6 +51,8 @@ func (p *postUsecase) FollowUser(following_id, follower_id int64) (bool, error) 
 		return false, err
 	}
 	created := p.ChatClient.CreateChatRoom(follower_id, following_id)
+
+	fmt.Println("chat room creation :", follower_id, following_id)
 	if created != nil {
 		// Handle error
 		return false, errors.New("error creating chat room")
@@ -152,7 +154,7 @@ func (u *postUsecase) LikePost(post_id, user_id int64) (int64, error) {
 
 	notificationMsg := fmt.Sprintf("New like on post %d by user %d", post_id, user_id)
 	fmt.Println("post id is", post_id)
-	err = helper.PushLikeNotificationToQueue(models.Notification{
+	err = helper.PushLikeNotificationToQueue(models.LikeNotification{
 		Topic:   topic,
 		UserID:  user_id,
 		PostsID: post_id,
@@ -207,18 +209,33 @@ func (u *postUsecase) AddComment(comment models.AddComent) (int64, error) {
 		return 0, errors.New("cant update comment count")
 
 	}
-
+	topic := "comment_notifications"
 	//creating an event in kafka to trigger the pushcomment to
 
 	// Create a notification message for the new comment
 	notificationMsg := fmt.Sprintf("New comment on post %d by user %d: %s", comment.PostsID, comment.UserID, comment.Content)
-	//fetch userid of the post and make it as the topic
+	// fetch userid of the post and make it as the topic
 	// Push the notification message to Kafka
-	err = helper.PushCommentToQueue("comment_notifications", []byte(notificationMsg))
+	// err = helper.PushCommentToQueue("comment_notifications", []byte(notificationMsg))
+	// if err != nil {
+	// 	// Handle error (e.g., log it)
+	// 	log.Printf("Failed to push comment notification to Kafka: %v", err)
+	// 	// Continue processing even if pushing notification fails
+	// }
+
+	//changed    check
+
+	err = helper.PushcommentNotificationToQueue(models.CommentNotification{
+
+		UserID:  comment.UserID,
+		Message: comment.Content,
+		PostID:  comment.PostsID,
+		Topic:   topic,
+		Content: comment.Content,
+	}, []byte(notificationMsg))
+
 	if err != nil {
-		// Handle error (e.g., log it)
 		log.Printf("Failed to push comment notification to Kafka: %v", err)
-		// Continue processing even if pushing notification fails
 	}
 
 	// Return the ID of the added comment
